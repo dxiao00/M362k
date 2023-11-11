@@ -777,3 +777,6 @@ if __name__ == "__main__":
 
 
 # get average initial bets
+
+
+# p 
