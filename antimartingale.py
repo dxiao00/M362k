@@ -3,7 +3,6 @@ import time
 import math
 import collections
 
-
 def play_round(player, dealer, deck, freq, initial_bets, max_bet): 
     player.reset(deck)
     dealer.reset(deck) 
@@ -14,12 +13,10 @@ def play_round(player, dealer, deck, freq, initial_bets, max_bet):
     # player.running_count += player.highlow[player.hand.cards[0]]
     # player.running_count += player.highlow[player.hand.cards[1]]
     # player.running_count += player.highlow[dealer.hand.cards[0]]
-    # player.true_count = player.running_count / (len(deck.cards) / 52
+    # player.true_count = player.running_count / (len(deck.cards) / 52)
 
-    # check natural blackjack
     natbj_result = player.natbj_compare(dealer)
 
-    # not natural blackjack
     if natbj_result == None:
         decision1 = player.play(dealer, deck, player.hand)
         decision2 = player.play(dealer, deck, player.hand2) 
@@ -53,6 +50,7 @@ def play_round(player, dealer, deck, freq, initial_bets, max_bet):
 
     return change
 
+
 def play_round_loud(player, dealer, deck, freq, max_bet): 
     player.reset(deck)
     dealer.reset(deck) 
@@ -75,13 +73,12 @@ def play_round_loud(player, dealer, deck, freq, max_bet):
     # print('running count', player.running_count)
     # print('true count', player.true_count)
 
-
-    natbj_result = player.natbj_compare(dealer)
-    if natbj_result != None: 
+    natbj = player.natbj_compare(dealer)
+    if natbj != None: 
         print("********************")
         print('natural blackjack!!!!!!!!!!!!!!!!!')
 
-    elif natbj_result == None: 
+    elif natbj == None: 
         print("********************")
         print('playing hand 1')
         decision1 = player.play(dealer, deck, player.hand, True)
@@ -110,10 +107,10 @@ def play_round_loud(player, dealer, deck, freq, max_bet):
         player.print_hand_status(player.hand4) 
         dealer.print_hand_status()
 
-        c1 = player.compare(dealer, player.hand, decision1)
-        c2 = player.compare(dealer, player.hand2, decision2)
-        c3 = player.compare(dealer, player.hand3, decision3)
-        c4 = player.compare(dealer, player.hand4, decision4)
+        compare1 = player.compare(dealer, player.hand, decision1)
+        compare2 = player.compare(dealer, player.hand2, decision2)
+        compare3 = player.compare(dealer, player.hand3, decision3)
+        compare4 = player.compare(dealer, player.hand4, decision4)
 
     # for i in range(1, len(dealer.hand.cards)):
     #     player.running_count += player.highlow[dealer.hand.cards[i]]
@@ -145,7 +142,8 @@ def play_round_loud(player, dealer, deck, freq, max_bet):
     return change 
 
 
-def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False, max_bet=500, goal=1000): 
+def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, 
+         loud=False, max_bet=500, streak_goal=5): 
     start = time.time()
     deck1 = ncc.Deck()
     deck1.build()
@@ -159,12 +157,16 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False,
     freq = collections.defaultdict(int)
     run_totals = collections.defaultdict(int)
     initial_bets = collections.defaultdict(int)
+    
     failed_attempts = collections.defaultdict(int)
     successes = collections.defaultdict(int)
 
 
+    streak = 0 
+
     for i in range(runs):
         for j in range(rounds): 
+
 
             # if the bet is more than the amount the player currently has, 
             # the player can't continue to play 
@@ -172,16 +174,22 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False,
                 failed_attempts[j] += 1
                 break
 
-            # if the goal amount is made, the player can stop playing 
-            if player1.total >= goal: 
+            if loud:
+                change = play_round_loud(player1, dealer1, deck1, freq, max_bet)
+            else: 
+                change = play_round(player1, dealer1, deck1, freq, initial_bets, max_bet)
+            
+            if change > 0: 
+                streak += 1
+            elif change < 0: 
+                streak = 0
+            
+            # after reaching streak_goal, the player stops playing 
+            if streak >= streak_goal:
                 successes[j] += 1
                 break
 
-            if loud:
-                play_round_loud(player1, dealer1, deck1, freq, max_bet)
-            else: 
-                play_round(player1, dealer1, deck1, freq, initial_bets, max_bet)
-            
+
             if len(deck1.cards) < (len(deck1.cards_copy) * 0.25):
                 deck1.replenish()
                 # player1.running_count = 0
@@ -191,12 +199,11 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False,
             # if player1.true_count > 5:
             #     print('\t', player1.running_count)
             #     print('\t', len(deck1.cards))
-
         
         run_totals[player1.total] += 1
         player1.total = player1.ogtotal
         player1.bet = player1.ogbet
-
+        streak = 0
         deck1.replenish()
         # player1.running_count = 0
         # player1.true_count = 0
@@ -219,38 +226,50 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False,
     # print('successful insurance', player1.insuranceS)
     # print('failed insurance', player1.insuranceF)
 
-    print()
-    print('average initial bet', sum([(x * (initial_bets[x] / (runs*rounds))) for x in initial_bets]))
+    print('initial bets', sum([(x * (initial_bets[x] / (runs*rounds))) for x in initial_bets]))
     print('initial bets', initial_bets)
 
+    # number of streaks that successfully reached streak goal
     print()
-    percent_failed = sum(failed_attempts[x] for x in failed_attempts) / runs
-    print('percent failed', percent_failed)
-    #print('failed attempts', failed_attempts)
-    avg_failed_round = sum(failed_attempts[x]*x for x in failed_attempts) / sum(failed_attempts[x] for x in failed_attempts)
-    print('average failed round', avg_failed_round)
+    successful_streaks = sum(successes[x] for x in successes) 
+    print('successful streaks', successful_streaks)
+
+    # number of streaks that failed to reach streak goal
+    failed_streaks = sum(failed_attempts[x] for x in failed_attempts)
+    print('failed streaks', failed_streaks)
 
     print()
-    percent_success = sum(successes[x] for x in successes) / runs
-    print('percent successful', percent_success)
-    #print('successes', successes)
-    avg_successful_round = sum(successes[x]*x for x in successes) / sum(successes[x] for x in successes)
-    print('average successful round', avg_successful_round)
+    average_rounds = (sum(successes[x]*x for x in successes)) / sum(successes[x] for x in successes)
+    print('average rounds played (successful streaks)', average_rounds)
+    average_rounds = (sum(failed_attempts[x]*x for x in failed_attempts)) / sum(failed_attempts[x] for x in failed_attempts)
+    print('average rounds played (failed streaks)', average_rounds)
 
+    # number of runs that gained / lost money
+    print()
+    successes = sum(run_totals[x] for x in run_totals if x >= player1.ogtotal)
+    average_gained = sum(x*run_totals[x] for x in run_totals if x >= player1.ogtotal) / successes
+    print('winning runs', successes)
+    print('final average (winning)', average_gained)
 
-    #print(sum([run_totals[x] for x in run_totals]))
+    failures = sum(run_totals[x] for x in run_totals if x < player1.ogtotal)
+    average_lost = sum(x*run_totals[x] for x in run_totals if x < player1.ogtotal) / failures
+    print('losing runs', failures)
+    print('final average (losing)', average_lost)
+
+    # print(sum([run_totals[x] for x in run_totals]))
     #print(freq)
     #print('total',player1.total)
     print("finished in ", time.time() - start, " seconds" )
     
 
+
 if __name__ == "__main__":
     # increasing the number of rounds makes the program run faster than increasing the number of runs
     # 6 decks, reshuffles at 78 cards 
 
-    # rounds is the MAX number of rounds in this case 
-    main(runs=1000, rounds=10000, decks=6, initial_bet=1, 
-         total=1000, max_split=3, loud=False, max_bet = 500, goal = 2000)
+    # set a streak goal
+    main(runs=100, rounds=10000, decks=6, initial_bet=1, 
+         total=1000, max_split=3, loud=False, max_bet=500, streak_goal=5)
 
 
 
