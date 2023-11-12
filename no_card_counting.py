@@ -145,11 +145,11 @@ class Player:
         self.hand3 = Hand()
         self.hand4 = Hand() # you can have a max of 4 hands at a time 
 
-        self.insuranceS = 0
-        self.insuranceF = 0
+        # self.insuranceS = 0
+        # self.insuranceF = 0
 
-        self.running_count = 0 
-        self.true_count = 0 
+        # self.running_count = 0 
+        # self.true_count = 0 
 
         # [0, 1, 2, 3, 4, ..., 10, 11]
         self.highlow = [None, -1, 1, 1, 1, 1, 1, 0, 0, 0, -1, -1]
@@ -435,19 +435,19 @@ class Player:
                 # print(other.hand.cards[0])
                 if decision == 'split':
                     self.split(deck, hand)
-                    self.running_count += self.highlow[self.hand.cards[-1]]
-                    self.running_count += self.highlow[self.hand2.cards[-1]]
-                    self.true_count = self.running_count / (len(deck.cards) / 52)
+                    # self.running_count += self.highlow[self.hand.cards[-1]]
+                    # self.running_count += self.highlow[self.hand2.cards[-1]]
+                    # self.true_count = self.running_count / (len(deck.cards) / 52)
                 elif decision == 'surrender':
                     self.surrender(hand)
                 elif decision == 'double':
                     self.double(deck, hand)
-                    self.running_count += self.highlow[hand.cards[-1]]
-                    self.true_count = self.running_count / (len(deck.cards) / 52)
+                    # self.running_count += self.highlow[hand.cards[-1]]
+                    # self.true_count = self.running_count / (len(deck.cards) / 52)
                 elif decision == 'hit':
                     self.hit(deck, hand)
-                    self.running_count += self.highlow[hand.cards[-1]]
-                    self.true_count = self.running_count / (len(deck.cards) / 52)
+                    # self.running_count += self.highlow[hand.cards[-1]]
+                    # self.true_count = self.running_count / (len(deck.cards) / 52)
                 elif decision == 'stand':
                     self.stand(hand)
                 
@@ -455,8 +455,8 @@ class Player:
                     print('decision', decision)
                     self.print_hand_status(hand)
 
-                    print('running count', self.running_count)
-                    print('true count', self.true_count)
+                    # print('running count', self.running_count)
+                    # print('true count', self.true_count)
             
 
             # if self.times_split == 3:
@@ -497,13 +497,13 @@ class Player:
             return 'push'
         
         else: 
-            insurance = self.insurance_decide(other) 
+            # insurance = self.insurance_decide(other) 
             if self.hand.natbj == False and other.hand.natbj == True: 
                 # if insurance != True: 
                 if True:
                     self.total -= self.bet
-                else:
-                    self.insuranceS += 1
+                # else:
+                #     self.insuranceS += 1
                 return 'lose' 
                 
             else:
@@ -518,7 +518,7 @@ class Player:
             return 
         if decision == 'surrender':
             self.total -= self.bet * 0.5
-            return 
+            return 'lose'
         elif decision == 'double':
             change = 2 * self.bet
         else:
@@ -526,21 +526,21 @@ class Player:
 
         if hand.value > 21 and other.hand.value <= 21: 
             self.total -= change
-            return
+            return 'lose'
         elif hand.value <= 21 and other.hand.value > 21:
             self.total += change
-            return
+            return 'win'
         elif hand.value > 21 and other.hand.value > 21: 
             self.total -= change
-            return
+            return 'lose'
         elif hand.value > other.hand.value:
             self.total += change
-            return
+            return 'win'
         elif hand.value < other.hand.value: 
             self.total -= change
-            return
+            return 'lose'
         else:
-            return
+            return 'push'
     
 
     def reset(self, deck): 
@@ -590,10 +590,10 @@ def play_round(player, dealer, deck, freq, initial_bets):
     #     player.bet = 10
     initial_bets[player.bet] += 1
 
-    player.running_count += player.highlow[player.hand.cards[0]]
-    player.running_count += player.highlow[player.hand.cards[1]]
-    player.running_count += player.highlow[dealer.hand.cards[0]]
-    player.true_count = player.running_count / (len(deck.cards) / 52)
+    # player.running_count += player.highlow[player.hand.cards[0]]
+    # player.running_count += player.highlow[player.hand.cards[1]]
+    # player.running_count += player.highlow[dealer.hand.cards[0]]
+    # player.true_count = player.running_count / (len(deck.cards) / 52)
 
     if not(player.natbj_compare(dealer)): 
         decision1 = player.play(dealer, deck, player.hand)
@@ -607,9 +607,9 @@ def play_round(player, dealer, deck, freq, initial_bets):
         player.compare(dealer, player.hand3, decision3)
         player.compare(dealer, player.hand4, decision4)
 
-    for i in range(1, len(dealer.hand.cards)):
-        player.running_count += player.highlow[dealer.hand.cards[i]]
-    player.true_count = player.running_count / (len(deck.cards) / 52)
+    # for i in range(1, len(dealer.hand.cards)):
+    #     player.running_count += player.highlow[dealer.hand.cards[i]]
+    # player.true_count = player.running_count / (len(deck.cards) / 52)
     
     change = player.total - start_total
     freq[change] += 1
@@ -632,14 +632,14 @@ def play_round_loud(player, dealer, deck, freq):
     dealer.print_hand_status()
     start_total = player.total
 
-    player.running_count += player.highlow[player.hand.cards[0]]
-    player.running_count += player.highlow[player.hand.cards[1]]
-    player.running_count += player.highlow[dealer.hand.cards[0]]
-    player.true_count = player.running_count / (len(deck.cards) / 52)
+    # player.running_count += player.highlow[player.hand.cards[0]]
+    # player.running_count += player.highlow[player.hand.cards[1]]
+    # player.running_count += player.highlow[dealer.hand.cards[0]]
+    # player.true_count = player.running_count / (len(deck.cards) / 52)
 
-    print("********************")
-    print('running count', player.running_count)
-    print('true count', player.true_count)
+    # print("********************")
+    # print('running count', player.running_count)
+    # print('true count', player.true_count)
 
     natbj = player.natbj_compare(dealer)
     if natbj != None: 
@@ -680,13 +680,13 @@ def play_round_loud(player, dealer, deck, freq):
         compare3 = player.compare(dealer, player.hand3, decision3)
         compare4 = player.compare(dealer, player.hand4, decision4)
 
-    for i in range(1, len(dealer.hand.cards)):
-        player.running_count += player.highlow[dealer.hand.cards[i]]
-        player.true_count = player.running_count / (len(deck.cards) / 52)
+    # for i in range(1, len(dealer.hand.cards)):
+    #     player.running_count += player.highlow[dealer.hand.cards[i]]
+    #     player.true_count = player.running_count / (len(deck.cards) / 52)
         
-    print("********************")
-    print('running count', player.running_count)
-    print('true count', player.true_count)
+    # print("********************")
+    # print('running count', player.running_count)
+    # print('true count', player.true_count)
 
     change = player.total - start_total
     freq[change] += 1
@@ -727,8 +727,8 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
             
             if len(deck1.cards) < (len(deck1.cards_copy) * 0.25):
                 deck1.replenish()
-                player1.running_count = 0
-                player1.true_count = 0
+                # player1.running_count = 0
+                # player1.true_count = 0
             
             # print(player1.true_count)
             # if player1.true_count > 5:
@@ -736,10 +736,11 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
             #     print('\t', len(deck1.cards))
         
         run_totals[player1.total] += 1
-        player1.total = 0
+        player1.total = player1.ogtotal
+        player1.bet = player1.ogbet
         deck1.replenish()
-        player1.running_count = 0
-        player1.true_count = 0
+        # player1.running_count = 0
+        # player1.true_count = 0
         #print('reset')
 
     print(f'FOR {runs*rounds} TOTAL ROUNDS:')
@@ -756,8 +757,8 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
     print('mean_run', mean_run)
     print('sd_run', sd_run)
 
-    print('successful insurance', player1.insuranceS)
-    print('failed insurance', player1.insuranceF)
+    # print('successful insurance', player1.insuranceS)
+    # print('failed insurance', player1.insuranceF)
 
     print('initial bets', sum([(x * (initial_bets[x] / (runs*rounds))) for x in initial_bets]))
     print('initial bets', initial_bets)
@@ -772,10 +773,8 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
 if __name__ == "__main__":
     # increasing the number of rounds makes the program run faster than increasing the number of runs
     # 6 decks, reshuffles at 78 cards 
-    main(runs=1, rounds=10000000, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
+    main(runs=1, rounds=10000, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
 
 
 
 # get average initial bets
-
-# add
