@@ -249,12 +249,12 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3,
     successes = sum(run_totals[x] for x in run_totals if x >= player1.ogtotal)
     average_gained = sum(x*run_totals[x] for x in run_totals if x >= player1.ogtotal) / successes
     print('winning runs', successes)
-    print('final average (winning)', average_gained)
+    print('average final total (winning)', average_gained)
 
     failures = sum(run_totals[x] for x in run_totals if x < player1.ogtotal)
     average_lost = sum(x*run_totals[x] for x in run_totals if x < player1.ogtotal) / failures
     print('losing runs', failures)
-    print('final average (losing)', average_lost)
+    print('average final total (losing)', average_lost)
 
     # print(sum([run_totals[x] for x in run_totals]))
     #print(freq)
@@ -269,7 +269,7 @@ if __name__ == "__main__":
 
     # set a streak goal
     main(runs=100, rounds=10000, decks=6, initial_bet=1, 
-         total=1000, max_split=3, loud=False, max_bet=500, streak_goal=5)
+         total=1000, max_split=3, loud=False, max_bet=500, streak_goal=7)
 
 
 
