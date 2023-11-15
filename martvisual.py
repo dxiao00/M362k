@@ -91,18 +91,23 @@ def change_initial_bet(runs, rounds, decks=6, initial_bets=[1], total=1000, max_
         # successL.append(percent_success)
         # avg_successL.append(avg_successful_round)
         
-        # set a random seed for reproducibility
-        np.random.seed(0)
-        random_indices = np.random.choice(len(run_totals), size=1000, replace=True)
+        # random sample
+        # np.random.seed(0)
+        # random_indices = np.random.choice(len(run_totals), size=1000, replace=True)
 
         # sample run totals and finish rounds
-        sample_run_totals = [run_totals[i] for i in random_indices]
-        sample_finish = [all_attempts[i] for i in random_indices]
-        sample_initial_bet = [initial_bet for i in range(len(random_indices))]
+        # sample_run_totals = [run_totals[i] for i in random_indices]
+        # sample_finish = [all_attempts[i] for i in random_indices]
+        # sample_initial_bet = [initial_bet for i in range(len(random_indices))]
 
-        data_run_totals += sample_run_totals
-        data_finish += sample_finish
-        data_initial_bets += sample_initial_bet
+        # data_run_totals += sample_run_totals
+        # data_finish += sample_finish
+        # data_initial_bets += sample_initial_bet
+
+        data_run_totals += run_totals
+        data_finish += all_attempts
+        initial = [initial_bet] * len(run_totals)
+        data_initial_bets += initial
 
     # print(data_run_totals)
     # print(data_finish)
@@ -116,12 +121,46 @@ def change_initial_bet(runs, rounds, decks=6, initial_bets=[1], total=1000, max_
     plt.colorbar(label='Initial bet size')
     plt.xlabel('Run total')
     plt.ylabel('Finishing round')
-    plt.title('Finishing round vs Run total by Initial bet size')
+    plt.title('Martingale strategy finishing totals')
 
     plt.show()
 
     print("finished in ", time.time() - start, " seconds" )
 
+
+
+def change_goal(runs, rounds, decks=6, initial_bet=10, total=1000, max_split=3, loud=False, max_bet=500, goals=[2000]): 
+    # meanL, sdL, mean_runL, sd_runL, failedL, avg_failedL, successL, avg_successL = []
+    start = time.time()
+    data_run_totals = []
+    data_finish = []
+    data_goals = []
+
+    for goal in goals: 
+        run_totals, all_attempts = get_data(runs, rounds, decks, initial_bet, total, max_split, loud, max_bet, goal)
+        
+        data_run_totals += run_totals
+        data_finish += all_attempts
+        run_goals = [goal] * len(run_totals)
+        data_goals += run_goals
+
+    # print(data_run_totals)
+    # print(data_finish)
+    # print(data_initial_bets)
+    data = {'run total': data_run_totals, 'finish round': data_finish, 'goal': data_goals}
+    df = pd.DataFrame(data)
+
+    plt.scatter(x=df['run total'], y=df['finish round'], c=df['goal'], 
+                cmap='coolwarm', s=1, alpha=0.7)
+    
+    plt.colorbar(label='Final goal')
+    plt.xlabel('Run total')
+    plt.ylabel('Finishing round')
+    plt.title('Martingale strategy finishing totals')
+
+    plt.show()
+
+    print("finished in ", time.time() - start, " seconds" )
 
 
 
@@ -130,7 +169,11 @@ if __name__ == "__main__":
     # 6 decks, reshuffles at 78 cards 
 
     # rounds is the MAX number of rounds in this case 
-    change_initial_bet(runs=10000, rounds=10000, decks=6, initial_bets=[5*i for i in range(1,11)], 
-         total=1000, max_split=3, loud=False, max_bet = 500, goal = 2000)
+    # change_initial_bet(runs=10000, rounds=10000, decks=6, initial_bets=[5*i for i in range(1,11)], 
+    #      total=1000, max_split=3, loud=False, max_bet = 500, goal = 2000)
+    
+    change_goal(runs=10000, rounds=10000, decks=6, initial_bet=10, 
+          total=1000, max_split=3, loud=False, max_bet = 500, goals = [1000 + 500*x for x in range(1,9)])
+
 
  
