@@ -7,6 +7,10 @@ import numpy as np
 import pandas as pd
 
 def get_data(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False, max_bet=500, goal=1000):
+
+    if initial_bet > max_bet:
+        initial_bet = max_bet
+
     deck1 = ncc.Deck()
     deck1.build()
     deck1.multiply_decks(decks)
@@ -67,7 +71,9 @@ def get_data(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=Fa
     # percent_failed = sum(failed_attempts[x] for x in failed_attempts) / runs
     # avg_failed_round = sum(failed_attempts[x]*x for x in failed_attempts) / sum(failed_attempts[x] for x in failed_attempts)
 
-    # percent_success = sum(successes[x] for x in successes) / runs
+    percent_success = sum(successes[x] for x in successes) / runs
+    # print('percent success', percent_success)
+    # print('initial bet', initial_bet)
     # avg_successful_round = sum(successes[x]*x for x in successes) / sum(successes[x] for x in successes)
 
     return run_totals1, all_attempts
@@ -128,7 +134,6 @@ def change_initial_bet(runs, rounds, decks=6, initial_bets=[1], total=1000, max_
     print("finished in ", time.time() - start, " seconds" )
 
 
-
 def change_goal(runs, rounds, decks=6, initial_bet=10, total=1000, max_split=3, loud=False, max_bet=500, goals=[2000]): 
     # meanL, sdL, mean_runL, sd_runL, failedL, avg_failedL, successL, avg_successL = []
     start = time.time()
@@ -163,6 +168,69 @@ def change_goal(runs, rounds, decks=6, initial_bet=10, total=1000, max_split=3, 
     print("finished in ", time.time() - start, " seconds" )
 
 
+def print_success_rates(runs=10000, rounds=10000, decks=6, initial_bets=[5*i for i in range(1,11)],
+                      total=1000, max_split=3, loud=False, max_bet = 500, goal = 2000):
+    for initial_bet in initial_bets: 
+        get_data(runs, rounds, decks, initial_bet, total, max_split, loud, max_bet, goal)
+
+
+def plot_success_rates(runs=100000, rounds=10000, decks=6, initial_bets=[20, 50, 100, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000],
+                      total=1000, max_split=3, loud=False, max_bet = 500, goal = 2000):
+    
+    data_success_rate = []
+    data_average_round = []
+    data_initial_bet = []
+
+    unlim_data_success_rate = []
+    unlim_data_average_round = []
+    unlim_data_initial_bet = []
+
+    for initial_bet in initial_bets: 
+        run_totals, end_rounds = get_data(runs, rounds, decks, initial_bet, total, max_split, loud, max_bet, goal)
+        unlim_run_totals, unlim_end_rounds = get_data(runs, rounds, decks, initial_bet, total, max_split, loud, 1000000, goal)
+
+        outcomes = [1 if i >= goal else 0 for i in run_totals]
+        unlim_outcomes = [1 if i >= goal else 0 for i in unlim_run_totals]
+        # success_rounds = [end_rounds[i] for i in outcomes if i == 1]
+        # fail_rounds = [end_rounds[i] for i in outcomes if i == 0]
+
+        success_rate = sum(outcomes) / len(outcomes)
+        average_round = sum(end_rounds) / len(end_rounds)
+
+        unlim_success_rate = sum(unlim_outcomes) / len(unlim_outcomes)
+        unlim_average_round = sum(unlim_end_rounds) / len(unlim_end_rounds)
+
+        print(success_rate)
+        print(average_round)
+
+        data_success_rate.append(success_rate)
+        data_average_round.append(average_round)
+        data_initial_bet.append(initial_bet)
+        
+        unlim_data_success_rate.append(unlim_success_rate)
+        unlim_data_average_round.append(unlim_average_round)
+        unlim_data_initial_bet.append(initial_bet)
+
+    data = {'success rate': data_success_rate, 'finish round': data_average_round, 'initial bet': data_initial_bet}
+    df = pd.DataFrame(data)
+
+    data = {'success rate': unlim_data_success_rate, 'finish round': unlim_data_average_round, 'initial bet': unlim_data_initial_bet}
+    unlim_df = pd.DataFrame(data)
+
+    plt.plot(df['initial bet'], df['success rate'], label=f'max bet of {max_bet}')
+    plt.plot(unlim_df['initial bet'], unlim_df['success rate'], label=f'unlimited max bet')
+    
+    plt.xlabel('Initial bet')
+    plt.ylabel('Success rate')
+    plt.title(f'Probability of successfully doubling initial bankroll of {total}')
+    plt.legend()
+    plt.show()
+
+
+        
+
+
+
 
 if __name__ == "__main__":
     # increasing the number of rounds makes the program run faster than increasing the number of runs
@@ -172,8 +240,9 @@ if __name__ == "__main__":
     # change_initial_bet(runs=10000, rounds=10000, decks=6, initial_bets=[5*i for i in range(1,11)], 
     #      total=1000, max_split=3, loud=False, max_bet = 500, goal = 2000)
     
-    change_goal(runs=10000, rounds=10000, decks=6, initial_bet=10, 
-          total=1000, max_split=3, loud=False, max_bet = 500, goals = [1000 + 500*x for x in range(1,9)])
+    # change_goal(runs=10000, rounds=10000, decks=6, initial_bet=10, 
+    #       total=1000, max_split=3, loud=False, max_bet = 500, goals = [1000 + 500*x for x in range(1,9)])
 
+    # print_success_rates()
 
- 
+    plot_success_rates()

@@ -145,7 +145,6 @@ class Player:
         self.hand3 = Hand()
         self.hand4 = Hand() # you can have a max of 4 hands at a time 
 
-
         # self.insuranceS = 0
         # self.insuranceF = 0
 
@@ -166,36 +165,11 @@ class Player:
                 return True 
             return False 
 
-    # run in order: 
-    # split_decide first 
-    # stand_decide and hit_decide last 
-    def split_decide(self, other, hand): 
-        if len(hand.cards) != 2: 
-            return False 
-        elif hand.split_aces: #check if already split Aces
-            return False
-        elif self.times_split >= self.max_split:
-            return False 
-        elif hand.cards[0] != hand.cards[1]: #check for regular pair
-            if hand.cards[0] not in [1,11] or hand.cards[1] not in [1,11]: #check for Ace pair
-                return False 
-        
-        # from basic strategy 
-        upcard = other.hand.cards[0]
-        pair = hand.cards[0]
-        if self.decide(upcard, [2, 3, 4, 5, 6, 7], pair, [2, 3, 7]):
-            return True 
-        if self.decide(upcard, [5, 6], pair, [4]):
-            return True 
-        if self.decide(upcard, [2, 3, 4, 5, 6], pair, [6]):
-            return True 
-        if self.decide(upcard, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 1], pair, [8, 11, 1]):
-            return True 
-        if self.decide(upcard, [2, 3, 4, 5, 6, 8, 9], pair, [9]):
-            return True 
-        return False 
-    
-    def hit_decide(self, other, hand): 
+    def hit_decide(self, other, hand):
+        # if hand.value < 17:
+        #     return True
+        # return False
+ 
         upcard = other.hand.cards[0]
         if hand.quality == 'hard': 
             if self.decide(upcard, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 1], hand.value, [4, 5, 6, 7, 8, 9, 10, 11]):
@@ -213,6 +187,10 @@ class Player:
             return False 
             
     def stand_decide(self, other, hand): 
+        # if hand.value >= 17:
+        #     return True
+        # return False
+    
         upcard = other.hand.cards[0]
         if hand.quality == 'hard': 
             if self.decide(upcard, [4, 5, 6], hand.value, [12]):
@@ -230,170 +208,13 @@ class Player:
             if self.decide(upcard, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 1], hand.value, [19, 20, 21]):
                 return True 
             return False 
-    
-    def double_decide(self, other, hand): 
-        if len(hand.cards) != 2:
-            return False 
-        upcard = other.hand.cards[0]
-        if hand.quality == 'hard': 
-            if self.decide(upcard, [3, 4, 5, 6], hand.value, [9]):
-                return True 
-            if self.decide(upcard, [2, 3, 4, 5, 6, 7, 8, 9], hand.value, [10]):
-                return True 
-            if self.decide(upcard, [2, 3, 4, 5, 6, 7, 8, 9, 10], hand.value, [11]):
-                return True 
-            return False 
-        if hand.quality == 'soft': 
-            if self.decide(upcard, [6], hand.value, [13]):
-                return True 
-            if self.decide(upcard, [5, 6], hand.value, [14, 15]):
-                return True 
-            if self.decide(upcard, [4, 5, 6], hand.value, [16]):
-                return True 
-            if self.decide(upcard, [3, 4, 5, 6], hand.value, [17, 18]):
-                return True 
-            return False 
-            
-    def surrender_decide(self, other, hand): 
-        if len(hand.cards) != 2: 
-            return False 
-        if hand.quality == 'soft': # never surrender on soft hand 
-            return False 
-        if self.times_split > 0: # can't surrender on split hands
-            return False
-        upcard = other.hand.cards[0]
-        if hand.quality == 'hard': 
-            if self.decide(upcard, [10], hand.value, [15]):
-                return True 
-            if self.decide(upcard, [9, 10, 11, 1], hand.value, [16]):
-                return True 
-            return False 
-        
-    def insurance_decide(self, other): 
-        if other.hand.cards[0] == 11 or other.hand.cards[0] == 1: 
-            if self.true_count > 3: 
-                return True  
-            
-    def deviation_decide(self, other, hand): 
-        upcard = other.hand.cards[0]
-        if self.true_count > 0: 
-            if hand.value == 16 and upcard == 10 and hand.quality == 'hard':
-                return 'stand'
-        if self.true_count > 4: 
-            if hand.value == 15 and upcard == 10 and hand.quality == 'hard': 
-                return 'stand'
-        if self.true_count > 5: 
-            if len(hand.cards) == 2: 
-                if hand.split_aces == False:
-                    if self.times_split < self.max_split: 
-                        if hand.cards[0] == 10 and hand.cards[1] == 10: 
-                            if upcard == 5: 
-                                return 'split' 
-        if self.true_count > 4: 
-            if len(hand.cards) == 2: 
-                if hand.split_aces == False: 
-                    if self.times_split < self.max_split: 
-                        if hand.cards[0] == 10 and hand.cards[1] == 10: 
-                            if upcard == 6: 
-                                return 'split' 
-        if self.true_count > 4:
-            if len(hand.cards) == 2: 
-                if hand.value == 10 and upcard == 10: 
-                    return 'double'
-        if self.true_count > 2:
-            if hand.value == 12 and upcard == 3 and hand.quality == 'hard': 
-                return 'stand'
-        if self.true_count > 3: 
-            if hand.value == 12 and upcard == 2 and hand.quality == 'hard': 
-                return 'stand'
-        if self.true_count > 1:
-            if len(hand.cards) == 2:  
-                if hand.value == 11 and upcard in [1,11] and hand.quality == 'hard': 
-                    return 'double'
-        if self.true_count > 1: 
-            if len(hand.cards) == 2: 
-                if hand.value == 9 and upcard == 2: 
-                    return 'double'
-        if self.true_count > 4: 
-            if len(hand.cards) == 2:
-                if hand.value == 10 and upcard in [1, 11]:
-                    return 'double'
-        if self.true_count > 3: 
-            if len(hand.cards) == 2:
-                if hand.value == 9 and upcard == 7:
-                    return 'double'
-        if self.true_count > 5:
-            if hand.value == 16 and upcard == 9 and hand.quality == 'hard':
-                if not (hand.cards[0] == 8 and hand.cards[1] == 8): 
-                    return 'stand'
-        if self.true_count < -1: 
-            if hand.value == 13 and upcard == 2 and hand.quality == 'hard':
-                return 'hit'
-        if self.true_count < 0: 
-            if hand.value == 12 and upcard == 4 and hand.quality == 'hard': 
-                return 'hit'
-        if self.true_count < -2: 
-            if hand.value == 12 and upcard == 5 and hand.quality == 'hard':
-                return 'hit'
-        if self.true_count < -1:
-            if hand.value == 12 and upcard == 6 and hand.quality == 'hard':
-                return 'hit'
-        if self.true_count < -2: 
-            if hand.value == 13 and upcard == 3 and hand.quality == 'hard':
-                return 'hit'
-        
-        return False
-    
-
-    def fab4_decide(self, other, hand): 
-        if len(hand.cards) != 2: 
-            return False 
-        if hand.quality == 'soft': # never surrender on soft hand 
-            return False 
-        if self.times_split > 0: # can't surrender on split hands
-            return False
-        upcard = other.hand.cards[0]
-        if self.true_count > 3: 
-            if upcard == 10 and hand.value == 14:
-                return 'surrender'
-        if self.true_count > 0: 
-            if upcard == 10 and hand.value == 15: 
-                return 'surrender' 
-        if self.true_count > 2: 
-            if upcard == 9 and hand.value == 15:
-                return 'surrender'
-        if self.true_count > 1: 
-            if upcard in [11, 1] and hand.value == 15:
-                return 'surrender' 
-
-        return False
-
 
     
     def get_decision(self, other, hand): 
-        
-        # for s17, never surrender on a pair so split decide first
-        if self.split_decide(other, hand):
-            return 'split'
-        
-        # otherwise surrender before anything else
-        # fab4 = self.fab4_decide(other, hand)
-        # if fab4 != False: 
-        #     return 'surrender'
-        if self.surrender_decide(other, hand):
-            return 'surrender' 
-        
-        # check deviations before basic strategy
-        # deviation = self.deviation_decide(other, hand) 
-        # if deviation != False: 
-        #     return deviation 
-        
-        # follow basic strategy 
-        elif self.double_decide(other, hand):
-            return 'double'
-        elif self.hit_decide(other, hand):
+        if self.hit_decide(other, hand):
             return 'hit'
-        elif self.stand_decide(other, hand):
+        
+        else:
             return 'stand'
 
     
@@ -431,27 +252,13 @@ class Player:
 
             while hand.fin == False: 
                 decision = self.get_decision(other, hand)
-                # print(decision)
-                # print(self.hand.cards)
-                # print(other.hand.cards[0])
-                if decision == 'split':
-                    self.split(deck, hand)
-                    # self.running_count += self.highlow[self.hand.cards[-1]]
-                    # self.running_count += self.highlow[self.hand2.cards[-1]]
-                    # self.true_count = self.running_count / (len(deck.cards) / 52)
-                elif decision == 'surrender':
-                    self.surrender(hand)
-                elif decision == 'double':
-                    self.double(deck, hand)
-                    # self.running_count += self.highlow[hand.cards[-1]]
-                    # self.true_count = self.running_count / (len(deck.cards) / 52)
-                elif decision == 'hit':
+
+                if decision == 'hit':
                     self.hit(deck, hand)
                     # self.running_count += self.highlow[hand.cards[-1]]
                     # self.true_count = self.running_count / (len(deck.cards) / 52)
                 elif decision == 'stand':
                     self.stand(hand)
-            
                 
                 if loud: 
                     print('decision', decision)
@@ -459,18 +266,6 @@ class Player:
 
                     # print('running count', self.running_count)
                     # print('true count', self.true_count)
-            
-
-            # if self.times_split == 3:
-            #     print(1, self.hand)
-            #     print(2, self.hand2)
-            #     print(3, self.hand3)
-            #     print(4, self.hand4)
-            # if hand.split_aces == True:
-            #     print(1, self.hand)
-            #     print(2, self.hand2)
-            #     print(3, self.hand3)
-            #     print(4, self.hand4)
             
             return decision
                     
@@ -766,22 +561,19 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
     print('initial bets', initial_bets)
 
     # print(sum([run_totals[x] for x in run_totals]))
-    print('freq', freq)
+    print(freq)
     print('net wins', sum(freq[i] for i in freq if i > 0) / rounds)
     print('net losses', sum(freq[i] for i in freq if i < 0) / rounds)
     print('net pushes', sum(freq[i] for i in freq if i == 0) / rounds)
     #print('total',player1.total)
     print("finished in ", time.time() - start, " seconds" )
-
-
-    print('absolute bets', sum(abs(i*freq[i]) for i in freq) / rounds)
     
 
 
 if __name__ == "__main__":
     # increasing the number of rounds makes the program run faster than increasing the number of runs
     # 6 decks, reshuffles at 78 cards 
-    main(runs=1, rounds=1000000, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
+    main(runs=1, rounds=1000000, decks=6, initial_bet=1, total=0, max_split=0, loud=False)
 
 
 

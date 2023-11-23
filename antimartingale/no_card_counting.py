@@ -145,7 +145,6 @@ class Player:
         self.hand3 = Hand()
         self.hand4 = Hand() # you can have a max of 4 hands at a time 
 
-
         # self.insuranceS = 0
         # self.insuranceF = 0
 
@@ -451,7 +450,6 @@ class Player:
                     # self.true_count = self.running_count / (len(deck.cards) / 52)
                 elif decision == 'stand':
                     self.stand(hand)
-            
                 
                 if loud: 
                     print('decision', decision)
@@ -772,9 +770,6 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
     print('net pushes', sum(freq[i] for i in freq if i == 0) / rounds)
     #print('total',player1.total)
     print("finished in ", time.time() - start, " seconds" )
-
-
-    print('absolute bets', sum(abs(i*freq[i]) for i in freq) / rounds)
     
 
 

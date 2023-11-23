@@ -43,7 +43,7 @@ def play_round(player, dealer, deck, freq, initial_bets, max_bet):
     # double after a loss, return to original bet after a win
     # implement strategy in the case of natural blackjack
     if change > 0:
-        player.bet = player.ogbet
+        player.bet = min(player.ogbet, max_bet)
     elif change < 0: 
         player.bet = (min(2 * player.bet, max_bet))
 
@@ -130,9 +130,9 @@ def play_round_loud(player, dealer, deck, freq, max_bet):
     # double after a loss, return to original bet after a win
     # implement strategy in the case of natural blackjack
     if change > 0:
-        player.bet = player.ogbet
+        player.bet = min(player.ogbet, max_bet)
     elif change < 0: 
-        player.bet = (min(2 * player.bet, max_bet))
+        player.bet = min(2 * player.bet, max_bet)
 
     print('change', change)
     print('total', player.total)
@@ -154,6 +154,9 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False,
     deck1.copy_cards()
     deck1.shuffle() 
 
+    if initial_bet > max_bet:
+        initial_bet = max_bet
+
     player1 = ncc.Player(bet=initial_bet, total=total, max_split=max_split)
     dealer1 = ncc.Dealer() 
     freq = collections.defaultdict(int)
@@ -165,6 +168,11 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False,
 
     for i in range(runs):
         for j in range(rounds): 
+
+            if len(deck1.cards) < (len(deck1.cards_copy) * 0.25):
+                deck1.replenish()
+                # player1.running_count = 0
+                # player1.true_count = 0
 
             # if the bet is more than the amount the player currently has, 
             # the player can't continue to play 
@@ -182,10 +190,6 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False,
             else: 
                 play_round(player1, dealer1, deck1, freq, initial_bets, max_bet)
             
-            if len(deck1.cards) < (len(deck1.cards_copy) * 0.25):
-                deck1.replenish()
-                # player1.running_count = 0
-                # player1.true_count = 0
             
             # print(player1.true_count)
             # if player1.true_count > 5:
@@ -197,7 +201,7 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False,
         player1.total = player1.ogtotal
         player1.bet = player1.ogbet
 
-        deck1.replenish()
+        # deck1.replenish()
         # player1.running_count = 0
         # player1.true_count = 0
         #print('reset')
@@ -249,8 +253,8 @@ if __name__ == "__main__":
     # 6 decks, reshuffles at 78 cards 
 
     # rounds is the MAX number of rounds in this case 
-    main(runs=1000, rounds=10000, decks=6, initial_bet=1, 
-         total=1000, max_split=3, loud=False, max_bet = 500, goal = 2000)
+    main(runs=100000, rounds=1000, decks=6, initial_bet=50, 
+         total=1000, max_split=3, loud=False, max_bet = 1000000, goal = 2000)
 
 
 
