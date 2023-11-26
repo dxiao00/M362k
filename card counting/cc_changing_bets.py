@@ -580,15 +580,6 @@ def play_round(player, dealer, deck, freq, initial_bets):
 
     start_total = player.total
 
-    # CHANGE BETS BASED ON TRUE COUNT
-    # the higher the true count, the better for the player
-    if player.true_count > 1: 
-        #player.bet = min(500, (2 ** (round(player.true_count) - 1)))
-        player.bet = min(50, (10*round(player.true_count)))
-    else:
-        player.bet = 10
-    initial_bets[player.bet] += 1
-
     player.running_count += player.highlow[player.hand.cards[0]]
     player.running_count += player.highlow[player.hand.cards[1]]
     player.running_count += player.highlow[dealer.hand.cards[0]]
@@ -616,6 +607,8 @@ def play_round(player, dealer, deck, freq, initial_bets):
     # if player.true_count > 3: 
     #     high_prop = (deck.cards.count(10) + deck.cards.count(11)) / len(deck.cards)
     #     print(len(deck.cards), player.running_count, round(player.true_count,2), round(high_prop,2))
+
+    return change 
 
 
 def play_round_loud(player, dealer, deck, freq): 
@@ -701,7 +694,7 @@ def play_round_loud(player, dealer, deck, freq):
     return change 
 
 
-def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False): 
+def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False, max_bet=500): 
     start = time.time()
     deck1 = Deck()
     deck1.build()
@@ -710,19 +703,46 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
     deck1.copy_cards()
     deck1.shuffle() 
 
+    if initial_bet > max_bet: 
+        initial_bet = max_bet
+
     player1 = Player(bet=initial_bet, total=total, max_split=max_split)
     dealer1 = Dealer() 
     freq = collections.defaultdict(int)
     run_totals = collections.defaultdict(int)
     initial_bets = collections.defaultdict(int)
 
+    true_count_totals = collections.defaultdict(int)
+    true_count_freq = collections.defaultdict(int)
+
+    total_games = 0
+
     for i in range(runs):
         for j in range(rounds): 
+
+            # CHANGE BETS BASED ON TRUE COUNT
+            # the higher the true count, the better for the player
+            # if 1 <= player1.true_count < 2: 
+            if True:
+                #player.bet = min(500, (2 ** (round(player.true_count) - 1)))
+                # player1.bet = min(max_bet, (10*round(player1.true_count)))
+                player1.bet = 1
+                total_games += 1
+
+            else:
+                player1.bet = 0
+            
+            rounded_true_count = round(player1.true_count)
+            initial_bets[player1.bet] += 1
 
             if loud:
                 play_round_loud(player1, dealer1, deck1, freq)
             else: 
-                play_round(player1, dealer1, deck1, freq, initial_bets)
+                change = play_round(player1, dealer1, deck1, freq, initial_bets)
+
+            true_count_totals[rounded_true_count] += change
+            true_count_freq[rounded_true_count] += 1
+
             
             if len(deck1.cards) < (len(deck1.cards_copy) * 0.25):
                 deck1.replenish()
@@ -742,8 +762,8 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
         #print('reset')
 
     print(f'FOR {runs*rounds} TOTAL ROUNDS:')
-    mean = sum([(x * (freq[x] / (runs*rounds))) for x in freq])
-    smom = sum([(x**2 * (freq[x] / (runs*rounds))) for x in freq])
+    mean = sum([(x * (freq[x] / (total_games))) for x in freq])
+    smom = sum([(x**2 * (freq[x] / (total_games))) for x in freq])
     sd = math.sqrt(smom - mean**2)    
     print('mean', mean)
     print('sd', sd)
@@ -763,7 +783,23 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
 
     # print(sum([run_totals[x] for x in run_totals]))
     print(freq)
+    print('total_games', total_games)
     #print('total',player1.total)
+
+    true_count_freq = dict(sorted(true_count_freq.items(), key=lambda x: x[0]))
+    true_count_totals = dict(sorted(true_count_totals.items(), key=lambda x: x[0]))
+    # print(true_count_freq)
+    # print(true_count_totals)
+
+    print(true_count_freq)
+    print(true_count_totals)
+
+    true_count_avg = {i: round((true_count_totals[i] / true_count_freq[i]),3) for i in true_count_freq}
+    print(true_count_avg)
+
+
+
+
     print("finished in ", time.time() - start, " seconds" )
     
 
@@ -771,7 +807,7 @@ def main(runs, rounds, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
 if __name__ == "__main__":
     # increasing the number of rounds makes the program run faster than increasing the number of runs
     # 6 decks, reshuffles at 78 cards 
-    main(runs=1, rounds=10000000, decks=6, initial_bet=1, total=0, max_split=3, loud=False)
+    main(runs=1, rounds=1000000, decks=6, initial_bet=1, total=0, max_split=3, loud=False, max_bet=500)
 
 
 

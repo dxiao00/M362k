@@ -178,10 +178,65 @@ def plot_success_rates(runs=100000, rounds=10000, decks=6, initial_bets=[20, 50,
                       total=1000, max_split=3, loud=False, max_bet = 500, goal = 2000):
     
     data_success_rate = []
-    data_average_round = []
     data_initial_bet = []
 
     unlim_data_success_rate = []
+    unlim_data_initial_bet = []
+
+    data_success_rate50 = []
+
+    for initial_bet in initial_bets: 
+        run_totals, end_rounds = get_data(runs, rounds, decks, initial_bet, total, max_split, loud, max_bet, goal)
+        unlim_run_totals, unlim_end_rounds = get_data(runs, rounds, decks, initial_bet, total, max_split, loud, 1000000, goal)
+        #run_totals50, end_rounds50 = get_data(runs, rounds, decks, initial_bet, total, max_split, loud, 50, goal)
+
+        outcomes = [1 if i >= goal else 0 for i in run_totals]
+        unlim_outcomes = [1 if i >= goal else 0 for i in unlim_run_totals]
+        #outcomes50 = [1 if i >= goal else 0 for i in run_totals50]
+        # success_rounds = [end_rounds[i] for i in outcomes if i == 1]
+        # fail_rounds = [end_rounds[i] for i in outcomes if i == 0]
+
+        success_rate = sum(outcomes) / len(outcomes)
+        unlim_success_rate = sum(unlim_outcomes) / len(unlim_outcomes)
+        #success_rate50 = sum(outcomes50) / len(outcomes50)
+
+        print(success_rate)
+
+        data_success_rate.append(success_rate)
+        data_initial_bet.append(initial_bet)
+        
+        unlim_data_success_rate.append(unlim_success_rate)
+        unlim_data_initial_bet.append(initial_bet)
+
+        #data_success_rate50.append(success_rate50)
+
+    data = {'success rate': data_success_rate, 'initial bet': data_initial_bet}
+    df = pd.DataFrame(data)
+
+    data = {'success rate': unlim_data_success_rate, 'initial bet': unlim_data_initial_bet}
+    unlim_df = pd.DataFrame(data)
+
+    #data = {'success rate': data_success_rate50, 'initial bet': data_initial_bet}
+    #df50 = pd.DataFrame(data)
+
+    plt.plot(df['initial bet'], df['success rate'], label=f'max bet of {max_bet}')
+    plt.plot(unlim_df['initial bet'], unlim_df['success rate'], label=f'unlimited max bet')
+    #plt.plot(df50['initial bet'], df50['success rate'], label=f'max bet of 50')
+    
+    plt.xlabel('Initial bet')
+    plt.ylabel('Success rate')
+    plt.title(f'Probability of successfully doubling initial bankroll of {total}')
+    plt.legend()
+    plt.show()
+
+
+
+def plot_average_rounds(runs=100000, rounds=10000, decks=6, initial_bets=[20, 50, 100, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000],
+                      total=1000, max_split=3, loud=False, max_bet = 500, goal = 2000):
+    
+    data_average_round = []
+    data_initial_bet = []
+
     unlim_data_average_round = []
     unlim_data_initial_bet = []
 
@@ -194,40 +249,33 @@ def plot_success_rates(runs=100000, rounds=10000, decks=6, initial_bets=[20, 50,
         # success_rounds = [end_rounds[i] for i in outcomes if i == 1]
         # fail_rounds = [end_rounds[i] for i in outcomes if i == 0]
 
-        success_rate = sum(outcomes) / len(outcomes)
         average_round = sum(end_rounds) / len(end_rounds)
 
-        unlim_success_rate = sum(unlim_outcomes) / len(unlim_outcomes)
         unlim_average_round = sum(unlim_end_rounds) / len(unlim_end_rounds)
 
-        print(success_rate)
         print(average_round)
 
-        data_success_rate.append(success_rate)
         data_average_round.append(average_round)
         data_initial_bet.append(initial_bet)
         
-        unlim_data_success_rate.append(unlim_success_rate)
         unlim_data_average_round.append(unlim_average_round)
         unlim_data_initial_bet.append(initial_bet)
 
-    data = {'success rate': data_success_rate, 'finish round': data_average_round, 'initial bet': data_initial_bet}
+    data = {'finish round': data_average_round, 'initial bet': data_initial_bet}
     df = pd.DataFrame(data)
 
-    data = {'success rate': unlim_data_success_rate, 'finish round': unlim_data_average_round, 'initial bet': unlim_data_initial_bet}
+    data = {'finish round': unlim_data_average_round, 'initial bet': unlim_data_initial_bet}
     unlim_df = pd.DataFrame(data)
 
-    plt.plot(df['initial bet'], df['success rate'], label=f'max bet of {max_bet}')
-    plt.plot(unlim_df['initial bet'], unlim_df['success rate'], label=f'unlimited max bet')
+    plt.plot(df['initial bet'], df['finish round'], label=f'max bet of {max_bet}')
+    plt.plot(unlim_df['initial bet'], unlim_df['finish round'], label=f'unlimited max bet')
     
     plt.xlabel('Initial bet')
-    plt.ylabel('Success rate')
-    plt.title(f'Probability of successfully doubling initial bankroll of {total}')
+    plt.ylabel('Finishing round')
+    plt.title(f'Mean final round for attempting to double initial bankroll of {total}')
     plt.legend()
     plt.show()
 
-
-        
 
 
 
@@ -244,5 +292,7 @@ if __name__ == "__main__":
     #       total=1000, max_split=3, loud=False, max_bet = 500, goals = [1000 + 500*x for x in range(1,9)])
 
     # print_success_rates()
+
+    #plot_average_rounds()
 
     plot_success_rates()
